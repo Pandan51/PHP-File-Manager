@@ -1,6 +1,6 @@
 <?php
-const BASE_PATH = __DIR__;
-const GALLERY_PATH = BASE_PATH . DIRECTORY_SEPARATOR . "gallery";
+
+const GALLERY_PATH = __DIR__ . DIRECTORY_SEPARATOR . "gallery";
 session_start();
 if (!isset($_SESSION['current_sub_path'])) {
     $_SESSION['current_sub_path'] = "";
@@ -64,13 +64,47 @@ spl_autoload_register(function ($classname){
     <button type="submit" name="action" value="removeFile">Delete file</button>
 </form>
 
-<p>Current path: <?php echo BASE_PATH ?></p>
-<p>Current work path: <?php echo GALLERY_PATH ?></p>
+<!--<p>Current path: --><?php //echo BASE_PATH ?><!--</p>-->
+
 <?php
-foreach (FileManager::GetFilesOfDirectory(basename(GALLERY_PATH)) as $file) {
-    echo basename($file)."<br>";
+
+$fullPath = GALLERY_PATH . DIRECTORY_SEPARATOR . $_SESSION['current_sub_path'];
+?>
+    <p>Current work path: <?php echo $fullPath ?></p> <?php
+
+// List the files in that specific location
+$items = scandir($fullPath);
+//$items = FileManager::GetFilesOfDirectory($fullPath);
+
+?>
+<a href="?back">Go back<br></a> <?php
+// 1. Get all directories (ignores . and .. automatically)
+$directories = glob($fullPath."*", GLOB_ONLYDIR);
+
+// 2. Get images with specific extensions
+// GLOB_BRACE allows the {png,jpg,...} syntax
+$images = glob($fullPath."*.{png,jpg,jpeg,gif}", GLOB_BRACE);
+
+// Merge them if you want one single list, or loop through them separately
+foreach ($directories as $dir) {
+    echo "📁 <a href='?open=$dir'>$dir</a><br>";
 }
-//echo getcwd()."<br>";
+
+foreach ($images as $img) {
+    echo "🖼️ $img <br>";
+}
+//foreach ($items as $item) {
+//    if ($item === "." || $item === "..") continue;
+//
+//    if (is_dir($fullPath . DIRECTORY_SEPARATOR . $item)) {
+//        // This link triggers the "Step In" logic above
+//        echo "📁 <a href='?open=$item'>$item</a><br>";
+//    } else {
+//        echo "🖼️ $item<br>";
+//    }
+//}
+
+echo getcwd()."<br>";
 //chdir("New directory");
 ?>
 <?php

@@ -20,6 +20,15 @@ class PathManager
 
     }
 
+    public static function getFullPath($subPath = "") {
+        return GALLERY_PATH . DIRECTORY_SEPARATOR . trim($subPath, DIRECTORY_SEPARATOR);
+    }
+
+    public static function breadcrumbs($subPath) {
+        // Turns "vacation/summer" into "Home > vacation > summer"
+        // This makes navigation much easier for the user
+    }
+
 
 }
 
