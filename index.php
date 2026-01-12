@@ -26,19 +26,35 @@ if (isset($_GET['back'])) {
     header("Location: index.php"); // Refresh to clean the URL
     exit();
 }
+if(!file_exists(__DIR__. DIRECTORY_SEPARATOR. "gallery"))
+{
+    mkdir(__DIR__. DIRECTORY_SEPARATOR. "gallery");
+}
 
 $realWorkingPath = GALLERY_PATH . (empty($_SESSION['current_sub_path']) ? "" : DIRECTORY_SEPARATOR . $_SESSION['current_sub_path']);
 
 spl_autoload_register(function ($classname){
-    require_once("{$classname}.php");
+    require_once(__DIR__.DIRECTORY_SEPARATOR."{$classname}.php");
 });
 
 ?>
 
-<form action="FileUpload.php" method="POST" enctype="multipart/form-data">
+    <!doctype html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport"
+              content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>Document</title>
+        <link href="CSS/index.css" rel="stylesheet">
+    </head>
+    <body class="body_margin">
+<h1>Tvá galerie</h1>
+<form action="FileHandler.php" method="POST" enctype="multipart/form-data">
     <label for="fileSelect">Select file:</label>
-    <input type="file" name="myFile" id="fileSelect" accept="image/png, image/jpeg, image/gif" >
-    <button type="submit" name="fileUpload">Upload</button>
+    <input type="file" name="myFile" id="fileSelect" required accept="image/png, image/jpeg, image/gif" >
+    <button type="submit" name="action" value="fileUpload">Upload</button>
 </form>
 <form action="FileHandler.php" method="POST">
     <input type="hidden" name="currentDir" value="<?php echo $_SESSION['current_sub_path']; ?>">
@@ -46,10 +62,16 @@ spl_autoload_register(function ($classname){
     <input type="text" name="nameDir" id="createDirectory" />
     <button type="submit" name="action" value="makeDirectory">Make Dir</button>
 </form>
+<!--<form action="FileHandler.php" method="POST">-->
+<!--    <label for="removeDirectory">Remove directory</label>-->
+<!--    <input type="text" name="targetDir" id="removeDirectory" required/>-->
+<!--    <button type="submit" name="action" value="removeDirectory">Remove Dir</button>-->
+<!--</form>-->
+
 <form action="FileHandler.php" method="POST">
-    <label for="removeDirectory">Remove directory</label>
-    <input type="text" name="targetDir" id="removeDirectory" required/>
-    <button type="submit" name="action" value="removeDirectory">Remove Dir</button>
+    <label for="removeTarget">Remove file or directory</label>
+    <input type="text" name="target" id="removeTarget" required/>
+    <button type="submit" name="action" value="delete">Remove Dir</button>
 </form>
 <form action="FileHandler.php" method="POST">
     <label for="targetFile">File or directory to rename</label>
@@ -58,26 +80,32 @@ spl_autoload_register(function ($classname){
     <input type="text" name="newName" id="fileNameInput" required/>
     <button type="submit" name="action" value="renameFile">Rename Dir</button>
 </form>
-<form action="FileHandler.php" method="POST">
-    <label for="removeFile">File to delete</label>
-    <input type="text" name="targetFile" id="removeFile" required/>
-    <button type="submit" name="action" value="removeFile">Delete file</button>
-</form>
+<!--<form action="FileHandler.php" method="POST">-->
+<!--    <label for="removeFile">File to delete</label>-->
+<!--    <input type="text" name="targetFile" id="removeFile" required/>-->
+<!--    <button type="submit" name="action" value="removeFile">Delete file</button>-->
+<!--</form>-->
 
 <!--<p>Current path: --><?php //echo BASE_PATH ?><!--</p>-->
 
 <?php
 
-$fullPath = GALLERY_PATH . DIRECTORY_SEPARATOR . $_SESSION['current_sub_path'];
-?>
-    <p>Current work path: <?php echo $fullPath ?></p> <?php
+$fullPath = PathManager::EnsureDirectorySeparator(GALLERY_PATH . DIRECTORY_SEPARATOR . $_SESSION['current_sub_path']);
+// Ensure the path ends with a slash so glob looks INSIDE it
 
+
+?>
+    <p>Current path: <?php echo $fullPath ?></p>
+    <a href="?back=1">Go back<br></a>
+
+<div class="container">
+<?php
 // List the files in that specific location
 $items = scandir($fullPath);
 //$items = FileManager::GetFilesOfDirectory($fullPath);
 
 ?>
-<a href="?back">Go back<br></a> <?php
+ <?php
 // 1. Get all directories (ignores . and .. automatically)
 $directories = glob($fullPath."*", GLOB_ONLYDIR);
 
@@ -87,12 +115,29 @@ $images = glob($fullPath."*.{png,jpg,jpeg,gif}", GLOB_BRACE);
 
 // Merge them if you want one single list, or loop through them separately
 foreach ($directories as $dir) {
-    echo "📁 <a href='?open=$dir'>$dir</a><br>";
+//    echo "📁 <a href='?open=$dir'>$dir</a><br>";
+
+    ?> <a href='?open=<?php echo $dir ?>'>📁 <?php echo basename($dir) ?> </a><br> <?php
 }
 
 foreach ($images as $img) {
-    echo "🖼️ $img <br>";
+    $fileName = basename($img);
+    $src = "gallery/" . $_SESSION['current_sub_path'] . "/" . $fileName;
+    $src = str_replace("//", "/", $src);
+
+    echo basename($img). "<br>";
+    echo "<img src='$src' width='200' alt='$src'><br>";
 }
+    ?>
+<!--        <img src="--><?php //echo $img ?><!--" alt="--><?php //echo $img ?><!--">-->
+
+
+
+    </body>
+    </html>
+
+<?php
+
 //foreach ($items as $item) {
 //    if ($item === "." || $item === "..") continue;
 //
@@ -104,26 +149,8 @@ foreach ($images as $img) {
 //    }
 //}
 
-echo getcwd()."<br>";
+
 //chdir("New directory");
-?>
-<?php
 
-//echo basename(getcwd())."<br>";
-//chdir("gallery");
-//echo basename(getcwd())."<br>";
-//chdir("..");
-//echo getcwd()."<br>";
-//PathManager::ChangeDirectory("gallery");
-////echo is_dir(getcwd()."/workspace");
-//echo getcwd();
 
-//opendir("New directory");
-//$arr = scandir("New directory");
-//
-//echo getcwd()."<br>";
-//foreach ($arr as $item)
-//{
-//    echo $item."<br>";
-//}
 

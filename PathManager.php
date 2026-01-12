@@ -24,6 +24,10 @@ class PathManager
         return GALLERY_PATH . DIRECTORY_SEPARATOR . trim($subPath, DIRECTORY_SEPARATOR);
     }
 
+    public static function EnsureDirectorySeparator($path) {
+        return rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+    }
+
     public static function breadcrumbs($subPath) {
         // Turns "vacation/summer" into "Home > vacation > summer"
         // This makes navigation much easier for the user

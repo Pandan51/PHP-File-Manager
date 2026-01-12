@@ -8,7 +8,7 @@ class FileManager
     }
 
     /**
-     * Renames file or directory
+     * Renames file or directorye
      * @param $oldName
      * @param $newName
      * @return void
@@ -38,8 +38,22 @@ class FileManager
         if (empty($dirname)) {
             return false;
         }
-        rmdir($dirname);
-        return true;
+        $items = array_diff(scandir($dirname), array('.', '..'));
+
+        if (empty($items)) {
+            // 2. It's empty, just delete it
+            return rmdir($dirname);
+        } else {
+            // 3. It has files, call your recursive function
+            return self::DeleteRecursively($dirname);
+        }
+//        try {
+//            rmdir($dirname);
+//        }catch (Exception $e){
+//            self::DeleteRecursively($dirname);
+//        }
+
+
     }
     public static function RemoveFile($filename)
     {
@@ -50,6 +64,35 @@ class FileManager
         }catch (Exception $e) {
             echo $e->getMessage();
         }
+    }
+    public static function DeleteRecursively($targetDir)
+    {
+//        if(is_dir($targetDir))
+//        {
+//            FileManager::RemoveDirectory($targetDir);
+//            echo "Odstraněna složka";
+//        }
+//        else
+//        {
+//            FileManager::RemoveFile($targetDir);
+//            echo "Odstraněn soubor";
+//        }
+
+        if (!is_dir($targetDir))
+            return false;
+
+        // Get everything inside, excluding . and ..
+        $items = array_diff(scandir($targetDir), array('.', '..'));
+
+        foreach ($items as $item) {
+            $path = $targetDir . DIRECTORY_SEPARATOR . $item;
+            // If it's a directory, call this function again (Recursion)
+            // If it's a file, just unlink it
+            is_dir($path) ? self::DeleteRecursively($path) : unlink($path);
+        }
+
+        return rmdir($targetDir);
+
     }
 
 
