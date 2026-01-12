@@ -117,7 +117,7 @@ $images = glob($fullPath."*.{png,jpg,jpeg,gif}", GLOB_BRACE);
 foreach ($directories as $dir) {
 //    echo "📁 <a href='?open=$dir'>$dir</a><br>";
 
-    ?> <a href='?open=<?php echo $dir ?>'>📁 <?php echo basename($dir) ?> </a><br> <?php
+    ?> <a href='?open=<?php echo basename($dir) ?>'>📁 <?php echo basename($dir) ?> </a><br> <?php
 }
 
 foreach ($images as $img) {
@@ -127,6 +127,10 @@ foreach ($images as $img) {
 
     echo basename($img). "<br>";
     echo "<img src='$src' width='200' alt='$src'><br>";
+}
+if(empty($images))
+{
+    ?><p>No images found..</p> <?php
 }
     ?>
 <!--        <img src="--><?php //echo $img ?><!--" alt="--><?php //echo $img ?><!--">-->

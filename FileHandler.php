@@ -13,15 +13,88 @@ spl_autoload_register(function ($classname){
 $currentSubPath = $_SESSION['current_sub_path'];
 $targetBase = PathManager::EnsureDirectorySeparator(GALLERY_PATH . DIRECTORY_SEPARATOR . $currentSubPath);
 
+switch ($_POST["action"])
+{
+    case "makeDirectory":
+
+        $folderName = !empty($_POST["nameDir"]) ? basename($_POST["nameDir"]) : "New folder";
+
+        $finalPath = $targetBase . $folderName;
+
+        if (!file_exists($finalPath)) {
+            mkdir($finalPath);
+        }
+        break;
+    case "delete":
+        if(!empty($_POST["target"])){
+            $target = trim($_POST["target"]);
+
+            if(is_dir($targetBase . $_POST["target"]))
+            {
+                FileManager::DeleteRecursively($targetBase . $target);
+            }
+            else
+            {
+
+                FileManager::RemoveFile($targetBase . $target);
+                echo "Odstraněn soubor";
+            }
+        }
+        break;
+    case "renameFile":
+        try {
+            if(empty($_POST["targetDir"] || empty($_POST["newName"]))) {
+                throw new Exception("Please enter a valid target directory or name");
+            }
+            $oldName = basename($_POST["targetDir"]);
+            $newName = basename($_POST["newName"]);
+
+            echo $targetBase . $oldName . "<br>";
+            echo $targetBase . $newName . "<br>";
+            if(!file_exists($targetBase . $oldName)){
+                throw new Exception("The target directory $oldName does not exist");
+            }
+
+            FileManager::RenameFile($targetBase . $oldName, $targetBase . $newName);
+
+        }catch (Exception $e){
+            echo "Error: " . $e->getMessage();
+        }
+        break;
+    case "fileUpload":
+        $file = $_FILES['myFile'];
+
+        // Define the destination directory
+
+        $targetFile = $targetBase . basename($file['name']);
+
+        // Check for errors
+        if ($file['error'] === 0) {
+            // Move the file to your desired folder
+//        if(!file_exists("uploads"))
+//        {
+//            mkdir("uploads");
+//        }
+            if (move_uploaded_file($file['tmp_name'], $targetFile)) {
+                echo "File uploaded successfully!";
+            } else {
+                echo "There was an error moving the file.";
+            }
+        } else {
+            echo "Error code: " . $file['error'];
+        }
+        break;
+
+}
 if($_POST["action"] == "makeDirectory"){
-
-    $folderName = !empty($_POST["nameDir"]) ? basename($_POST["nameDir"]) : "New folder";
-
-    $finalPath = $targetBase . $folderName;
-
-    if (!file_exists($finalPath)) {
-        mkdir($finalPath);
-    }
+//
+//    $folderName = !empty($_POST["nameDir"]) ? basename($_POST["nameDir"]) : "New folder";
+//
+//    $finalPath = $targetBase . $folderName;
+//
+//    if (!file_exists($finalPath)) {
+//        mkdir($finalPath);
+//    }
 //    if(!file_exists($name)){
 //        mkdir($_SESSION['current_sub_path'] . $name);
 //    }
@@ -34,96 +107,93 @@ if($_POST["action"] == "makeDirectory"){
 //        mkdir($_SESSION['current_sub_path'] ."New folder($i)");
 //    }
 }
-else if($_POST["action"] == "removeDirectory"){
-    if(!empty($_POST["targetDir"])){
-        $name = basename($_POST["targetDir"]);
-        echo $name. "<br>";
-        echo $targetBase . $name;
 
-        if(file_exists($targetBase . $name)){
-            FileManager::RemoveDirectory($targetBase . $name);
-        }
-    }
-
-}
-else if($_POST["action"] == "renameFile") {
-    try {
-        if(empty($_POST["targetDir"] || empty($_POST["newName"]))) {
-            throw new Exception("Please enter a valid target directory or name");
-        }
-        $oldName = ($_POST["targetDir"]);
-        $newName = ($_POST["newName"]);
-
-        echo $targetBase . $oldName . "<br>";
-        echo $targetBase . $newName . "<br>";
-        if(!file_exists($targetBase . $oldName)){
-            throw new Exception("The target directory $oldName does not exist");
-        }
-
-        FileManager::RenameFile($targetBase . $oldName, $targetBase . $newName);
-
-    }catch (Exception $e){
-        echo "Error: " . $e->getMessage();
-    }
-
-}
-else if($_POST["action"] == "removeFile") {
-    try {
-        if(empty($_POST["targetFile"])){
-            throw new Exception("Please enter a valid target file name");
-        }
-
-        unlink($targetBase . $_POST["targetFile"]);
-    }catch (Exception $e){
-        echo "Error: " . $e->getMessage();
-    }
-
-}
-else if($_POST["action"] == "delete") {
-    if(!empty($_POST["target"])){
-        $target = trim($_POST["target"]);
-
-        if(is_dir($targetBase . $_POST["target"]))
-        {
-            try {
-                FileManager::RemoveDirectory($targetBase . $target);
-                echo "Odstraněna složka";
-            }catch (Exception $e){
-                FileManager::DeleteRecursively($targetBase . $target);
-            }
-
-        }
-        else
-        {
-
-            FileManager::RemoveFile($targetBase . $target);
-            echo "Odstraněn soubor";
-        }
-    }
-}
-else if ($_POST['action'] == "fileUpload") {
-    $file = $_FILES['myFile'];
-
-    // Define the destination directory
-
-    $targetFile = $targetBase . basename($file['name']);
-
-    // Check for errors
-    if ($file['error'] === 0) {
-        // Move the file to your desired folder
-//        if(!file_exists("uploads"))
-//        {
-//            mkdir("uploads");
+//else if($_POST["action"] == "removeDirectory"){
+//    if(!empty($_POST["targetDir"])){
+//        $name = basename($_POST["targetDir"]);
+//        echo $name. "<br>";
+//        echo $targetBase . $name;
+//
+//        if(file_exists($targetBase . $name)){
+//            FileManager::RemoveDirectory($targetBase . $name);
 //        }
-        if (move_uploaded_file($file['tmp_name'], $targetFile)) {
-            echo "File uploaded successfully!";
-        } else {
-            echo "There was an error moving the file.";
-        }
-    } else {
-        echo "Error code: " . $file['error'];
-    }
-}
+//    }
+//
+//}
+
+//else if($_POST["action"] == "renameFile") {
+//    try {
+//        if(empty($_POST["targetDir"] || empty($_POST["newName"]))) {
+//            throw new Exception("Please enter a valid target directory or name");
+//        }
+//        $oldName = basename($_POST["targetDir"]);
+//        $newName = basename($_POST["newName"]);
+//
+//        echo $targetBase . $oldName . "<br>";
+//        echo $targetBase . $newName . "<br>";
+//        if(!file_exists($targetBase . $oldName)){
+//            throw new Exception("The target directory $oldName does not exist");
+//        }
+//
+//        FileManager::RenameFile($targetBase . $oldName, $targetBase . $newName);
+//
+//    }catch (Exception $e){
+//        echo "Error: " . $e->getMessage();
+//    }
+//
+//}
+
+//else if($_POST["action"] == "removeFile") {
+//    try {
+//        if(empty($_POST["targetFile"])){
+//            throw new Exception("Please enter a valid target file name");
+//        }
+//
+//        unlink($targetBase . $_POST["targetFile"]);
+//    }catch (Exception $e){
+//        echo "Error: " . $e->getMessage();
+//    }
+//
+//}
+//else if($_POST["action"] == "delete") {
+//    if(!empty($_POST["target"])){
+//        $target = trim($_POST["target"]);
+//
+//        if(is_dir($targetBase . $_POST["target"]))
+//        {
+//            FileManager::DeleteRecursively($targetBase . $target);
+//        }
+//        else
+//        {
+//
+//            FileManager::RemoveFile($targetBase . $target);
+//            echo "Odstraněn soubor";
+//        }
+//    }
+//}
+//else if ($_POST['action'] == "fileUpload") {
+//    $file = $_FILES['myFile'];
+//
+//    // Define the destination directory
+//
+//    $targetFile = $targetBase . basename($file['name']);
+//
+//    // Check for errors
+//    if ($file['error'] === 0) {
+//        // Move the file to your desired folder
+////        if(!file_exists("uploads"))
+////        {
+////            mkdir("uploads");
+////        }
+//        if (move_uploaded_file($file['tmp_name'], $targetFile)) {
+//            echo "File uploaded successfully!";
+//        } else {
+//            echo "There was an error moving the file.";
+//        }
+//    } else {
+//        echo "Error code: " . $file['error'];
+//    }
+//}
 echo $targetBase. "<br>";
 
 echo $currentSubPath;
