@@ -1,9 +1,7 @@
 <?php
 
 
-if (empty($_SESSION['fileManager'])) {
-    $_SESSION['fileManager'] = array();
-}
+
 
 class PathManager
 {
@@ -28,9 +26,14 @@ class PathManager
         return rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
     }
 
-    public static function breadcrumbs($subPath) {
+    public static function CreateBreadcrumbs($receivedPath) {
         // Turns "vacation/summer" into "Home > vacation > summer"
         // This makes navigation much easier for the user
+        $parts = explode(DIRECTORY_SEPARATOR, $receivedPath);
+
+        $breadcrumb_path = implode(" > ", $parts);
+
+        return $breadcrumb_path;
     }
 
 

@@ -7,3 +7,39 @@
 {
     margin: 20px;
 }
+
+/*.gallery-item {*/
+/*    display: flex;*/
+/*    align-items: center;*/
+/*    gap: 10px;*/
+/*    padding: 5px;*/
+
+/*}*/
+
+/*.gallery-item a {*/
+
+/*    text-decoration: none;*/
+/*    color: #333;*/
+/*}*/
+/*.gallery-item a:hover {*/
+/*    text-decoration: underline;*/
+/*}*/
+
+/*.gallery-item button {*/
+/*    background: none;*/
+/*    border: 1px solid #ccc;*/
+/*    cursor: pointer;*/
+/*    border-radius: 4px;*/
+/*    padding: 2px 5px;*/
+/*}*/
+
+/*.gallery-item button:hover {*/
+/*    background: #f0f0f0;*/
+/*}*/
+
+/*.gallery-img-container {*/
+/*    display: flex;*/
+/*    justify-content: center;*/
+/*    align-items: center;*/
+/*    flex-direction: column;*/
+/*}*/

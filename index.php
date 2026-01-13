@@ -95,13 +95,13 @@ $fullPath = PathManager::EnsureDirectorySeparator(GALLERY_PATH . DIRECTORY_SEPAR
 
 
 ?>
-    <p>Current path: <?php echo $fullPath ?></p>
+    <p>Current path: <?php echo PathManager::CreateBreadcrumbs($fullPath) ?></p>
     <a href="?back=1">Go back<br></a>
 
 <div class="container">
 <?php
-// List the files in that specific location
-$items = scandir($fullPath);
+//// List the files in that specific location
+//$items = scandir($fullPath);
 //$items = FileManager::GetFilesOfDirectory($fullPath);
 
 ?>
@@ -117,7 +117,23 @@ $images = glob($fullPath."*.{png,jpg,jpeg,gif}", GLOB_BRACE);
 foreach ($directories as $dir) {
 //    echo "📁 <a href='?open=$dir'>$dir</a><br>";
 
-    ?> <a href='?open=<?php echo basename($dir) ?>'>📁 <?php echo basename($dir) ?> </a><br> <?php
+//    ?><!-- <a href='?open=--><?php //echo basename($dir) ?><!--'>📁 --><?php //echo basename($dir) ?><!--</a><br> --><?php
+
+$name = basename($dir);
+?>
+    <div class="gallery-item">
+        <a href='?open=<?php echo urlencode($name); ?>'>📁 <?php echo $name; ?></a>
+
+        <form action="FileHandler.php" method="POST" style="display:inline;">
+            <input type="hidden" name="target" value="<?php echo $name; ?>">
+            <button type="submit" name="action" value="delete"
+                    onclick="return confirm('Smazat složku <?php echo $name; ?>?')">🗑️</button>
+        </form>
+
+        <button onclick="renameItem('<?php echo $name; ?>')">✏️</button>
+    </div>
+<?php
+
 }
 
 foreach ($images as $img) {
@@ -125,36 +141,64 @@ foreach ($images as $img) {
     $src = "gallery/" . $_SESSION['current_sub_path'] . "/" . $fileName;
     $src = str_replace("//", "/", $src);
 
-    echo basename($img). "<br>";
-    echo "<img src='$src' width='200' alt='$src'><br>";
-}
-if(empty($images))
-{
-    ?><p>No images found..</p> <?php
-}
+
     ?>
-<!--        <img src="--><?php //echo $img ?><!--" alt="--><?php //echo $img ?><!--">-->
+    <div class="gallery-img-container">
+<!--        <a href='?open=--><?php //echo urlencode($name); ?><!--'>📁 --><?php //echo $name; ?><!--</a>-->
+        <p> <?php echo "$fileName" ?></p>
+        <img src='<?php echo $src ?>' width='200' alt='$src'><br>
 
+    <form action="FileHandler.php" method="POST" style="display:inline;">
+        <input type="hidden" name="target" value="<?php echo $fileName; ?>">
+        <button type="submit" name="action" value="delete"
+                onclick="return confirm('Smazat složku <?php echo $src; ?>?')">🗑️</button>
+    </form>
 
+    <button onclick="renameItem('<?php echo $src; ?>')">✏️</button>
+</div>
+<?php
+}
+if(empty($directories) && empty($images))
+{
+    ?><p>Složka je prázdná..</p><?php
+}
 
+?>
     </body>
     </html>
 
+<!--JavaScript tvořen přes AI, pro tlačítka vedle složek a obrázků-->
+<script>
+    function renameItem(oldName) {
+        let newName = prompt("Zadejte nový název pro: " + oldName, oldName);
+
+        if (newName && newName !== oldName) {
+            // Create a temporary form to send the POST request
+            let form = document.createElement('form');
+            form.method = 'POST';
+            form.action = 'FileHandler.php';
+
+            const params = {
+                action: 'renameFile',
+                targetDir: oldName, // Your handler uses 'targetDir' for the old name
+                newName: newName
+            };
+
+            for (const key in params) {
+                let input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = params[key];
+                form.appendChild(input);
+            }
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+</script>
 <?php
 
-//foreach ($items as $item) {
-//    if ($item === "." || $item === "..") continue;
-//
-//    if (is_dir($fullPath . DIRECTORY_SEPARATOR . $item)) {
-//        // This link triggers the "Step In" logic above
-//        echo "📁 <a href='?open=$item'>$item</a><br>";
-//    } else {
-//        echo "🖼️ $item<br>";
-//    }
-//}
-
-
-//chdir("New directory");
 
 
 

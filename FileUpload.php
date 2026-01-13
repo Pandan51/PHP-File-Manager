@@ -1,6 +1,6 @@
 <?php
 include_once("FileManager.php");
-include_once("DirectoryManager.php");
+
 
 //if (isset($_POST['fileUpload'])) {
 //    $file = $_FILES['myFile'];

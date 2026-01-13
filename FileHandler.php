@@ -1,5 +1,6 @@
 <?php
 
+
 session_start();
 if (!isset($_SESSION['current_sub_path'])) {
     $_SESSION['current_sub_path'] = "";
@@ -11,23 +12,36 @@ spl_autoload_register(function ($classname){
 });
 
 $currentSubPath = $_SESSION['current_sub_path'];
+// Základní cesta
 $targetBase = PathManager::EnsureDirectorySeparator(GALLERY_PATH . DIRECTORY_SEPARATOR . $currentSubPath);
 
 switch ($_POST["action"])
 {
     case "makeDirectory":
 
-        $folderName = !empty($_POST["nameDir"]) ? basename($_POST["nameDir"]) : "New folder";
+        $folderName = !empty($_POST["nameDir"]) ? trim(basename($_POST["nameDir"])) : "New folder";
 
         $finalPath = $targetBase . $folderName;
+
 
         if (!file_exists($finalPath)) {
             mkdir($finalPath);
         }
+        else
+        {
+            $i = 1;
+            while(file_exists($finalPath."($i)"))
+            {
+                $i++;
+            }
+            mkdir($finalPath."($i)");
+        }
+
+
         break;
     case "delete":
         if(!empty($_POST["target"])){
-            $target = trim($_POST["target"]);
+            $target = ($_POST["target"]);
 
             if(is_dir($targetBase . $_POST["target"]))
             {
@@ -35,7 +49,6 @@ switch ($_POST["action"])
             }
             else
             {
-
                 FileManager::RemoveFile($targetBase . $target);
                 echo "Odstraněn soubor";
             }
@@ -43,11 +56,11 @@ switch ($_POST["action"])
         break;
     case "renameFile":
         try {
-            if(empty($_POST["targetDir"] || empty($_POST["newName"]))) {
+            if(empty($_POST["targetDir"]) || empty($_POST["newName"])) {
                 throw new Exception("Please enter a valid target directory or name");
             }
             $oldName = basename($_POST["targetDir"]);
-            $newName = basename($_POST["newName"]);
+            $newName = trim(basename($_POST["newName"]));
 
             echo $targetBase . $oldName . "<br>";
             echo $targetBase . $newName . "<br>";
@@ -63,18 +76,15 @@ switch ($_POST["action"])
         break;
     case "fileUpload":
         $file = $_FILES['myFile'];
-
+        var_dump($_FILES);
         // Define the destination directory
 
         $targetFile = $targetBase . basename($file['name']);
 
         // Check for errors
         if ($file['error'] === 0) {
-            // Move the file to your desired folder
-//        if(!file_exists("uploads"))
-//        {
-//            mkdir("uploads");
-//        }
+
+
             if (move_uploaded_file($file['tmp_name'], $targetFile)) {
                 echo "File uploaded successfully!";
             } else {
@@ -84,9 +94,12 @@ switch ($_POST["action"])
             echo "Error code: " . $file['error'];
         }
         break;
-
+    default:
+        break;
 }
-if($_POST["action"] == "makeDirectory"){
+
+
+//if($_POST["action"] == "makeDirectory"){
 //
 //    $folderName = !empty($_POST["nameDir"]) ? basename($_POST["nameDir"]) : "New folder";
 //
@@ -106,7 +119,7 @@ if($_POST["action"] == "makeDirectory"){
 //        }
 //        mkdir($_SESSION['current_sub_path'] ."New folder($i)");
 //    }
-}
+//}
 
 //else if($_POST["action"] == "removeDirectory"){
 //    if(!empty($_POST["targetDir"])){
@@ -194,9 +207,8 @@ if($_POST["action"] == "makeDirectory"){
 //        echo "Error code: " . $file['error'];
 //    }
 //}
-echo $targetBase. "<br>";
 
-echo $currentSubPath;
+
 
 
 header("Location: index.php");
