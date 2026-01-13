@@ -8,7 +8,7 @@ if (!isset($_SESSION['current_sub_path'])) {
 const GALLERY_PATH = __DIR__ . DIRECTORY_SEPARATOR . "gallery";
 
 spl_autoload_register(function ($classname){
-    require_once(__DIR__.DIRECTORY_SEPARATOR."{$classname}.php");
+    require_once(__DIR__.DIRECTORY_SEPARATOR."$classname.php");
 });
 
 $currentSubPath = $_SESSION['current_sub_path'];
@@ -19,11 +19,13 @@ switch ($_POST["action"])
 {
     case "makeDirectory":
 
+        //Název složky, nebo pokud je prázdný, je výchozí "New folder"
         $folderName = !empty($_POST["nameDir"]) ? trim(basename($_POST["nameDir"])) : "New folder";
 
+        //Současná cesta + název složky
         $finalPath = $targetBase . $folderName;
 
-
+        // Pokud existuje, vytvoř složku, jinak incrementujeme $i, dokud se nedá vytvořit
         if (!file_exists($finalPath)) {
             mkdir($finalPath);
         }
@@ -43,10 +45,12 @@ switch ($_POST["action"])
         if(!empty($_POST["target"])){
             $target = ($_POST["target"]);
 
+            // Pokud je složka, rekurzivně vyčistíme složky, pote je smažeme, dokud se nesmaže cíl
             if(is_dir($targetBase . $_POST["target"]))
             {
                 FileManager::DeleteRecursively($targetBase . $target);
             }
+            // jinak odstraň soubor
             else
             {
                 FileManager::RemoveFile($targetBase . $target);
@@ -55,42 +59,36 @@ switch ($_POST["action"])
         }
         break;
     case "renameFile":
-        try {
-            if(empty($_POST["targetDir"]) || empty($_POST["newName"])) {
-                throw new Exception("Please enter a valid target directory or name");
-            }
-            $oldName = basename($_POST["targetDir"]);
-            $newName = trim(basename($_POST["newName"]));
 
-            echo $targetBase . $oldName . "<br>";
-            echo $targetBase . $newName . "<br>";
-            if(!file_exists($targetBase . $oldName)){
-                throw new Exception("The target directory $oldName does not exist");
-            }
-
-            FileManager::RenameFile($targetBase . $oldName, $targetBase . $newName);
-
-        }catch (Exception $e){
-            echo "Error: " . $e->getMessage();
+        if(empty($_POST["targetDir"]) || empty($_POST["newName"])) {
+            throw new Exception("Please enter a valid target directory or name");
         }
+        $oldName = basename($_POST["targetDir"]);
+        $newName = trim(basename($_POST["newName"]));
+
+//        echo $targetBase . $oldName . "<br>";
+//        echo $targetBase . $newName . "<br>";
+        if(!file_exists($targetBase . $oldName)){
+            throw new Exception("The target directory $oldName does not exist");
+        }
+
+        FileManager::RenameFile($targetBase . $oldName, $targetBase . $newName);
+
+
         break;
     case "fileUpload":
+        // Superglobální pole $_FILES
         $file = $_FILES['myFile'];
-        var_dump($_FILES);
+
         // Define the destination directory
 
         $targetFile = $targetBase . basename($file['name']);
 
         // Check for errors
         if ($file['error'] === 0) {
-
-
-            if (move_uploaded_file($file['tmp_name'], $targetFile)) {
-                echo "File uploaded successfully!";
-            } else {
-                echo "There was an error moving the file.";
-            }
-        } else {
+            move_uploaded_file($file['tmp_name'], $targetFile);
+        }
+        else {
             echo "Error code: " . $file['error'];
         }
         break;

@@ -6,7 +6,7 @@ if (!isset($_SESSION['current_sub_path'])) {
     $_SESSION['current_sub_path'] = "";
 }
 
-// --- LOGIC SECTION 2: STEP IN ---
+// Navigace hlouběji v složkách
 if (isset($_GET['open'])) {
     $folder = basename($_GET['open']);
     // Append the new folder to our current string
@@ -17,7 +17,7 @@ if (isset($_GET['open'])) {
     exit();
 }
 
-// --- LOGIC SECTION 3: GO BACK ---
+// Navigace zpět v složkách
 if (isset($_GET['back'])) {
     $parts = explode(DIRECTORY_SEPARATOR, $_SESSION['current_sub_path']);
     array_pop($parts);
@@ -34,7 +34,7 @@ if(!file_exists(__DIR__. DIRECTORY_SEPARATOR. "gallery"))
 $realWorkingPath = GALLERY_PATH . (empty($_SESSION['current_sub_path']) ? "" : DIRECTORY_SEPARATOR . $_SESSION['current_sub_path']);
 
 spl_autoload_register(function ($classname){
-    require_once(__DIR__.DIRECTORY_SEPARATOR."{$classname}.php");
+    require_once(__DIR__.DIRECTORY_SEPARATOR."$classname.php");
 });
 
 ?>
@@ -62,36 +62,24 @@ spl_autoload_register(function ($classname){
     <input type="text" name="nameDir" id="createDirectory" />
     <button type="submit" name="action" value="makeDirectory">Make Dir</button>
 </form>
-<!--<form action="FileHandler.php" method="POST">-->
-<!--    <label for="removeDirectory">Remove directory</label>-->
-<!--    <input type="text" name="targetDir" id="removeDirectory" required/>-->
-<!--    <button type="submit" name="action" value="removeDirectory">Remove Dir</button>-->
-<!--</form>-->
 
-<form action="FileHandler.php" method="POST">
-    <label for="removeTarget">Remove file or directory</label>
-    <input type="text" name="target" id="removeTarget" required/>
-    <button type="submit" name="action" value="delete">Remove Dir</button>
-</form>
-<form action="FileHandler.php" method="POST">
-    <label for="targetFile">File or directory to rename</label>
-    <input type="text" name="targetDir" id="targetFile" required/>
-    <label for="fileNameInput">New name</label>
-    <input type="text" name="newName" id="fileNameInput" required/>
-    <button type="submit" name="action" value="renameFile">Rename Dir</button>
-</form>
 <!--<form action="FileHandler.php" method="POST">-->
-<!--    <label for="removeFile">File to delete</label>-->
-<!--    <input type="text" name="targetFile" id="removeFile" required/>-->
-<!--    <button type="submit" name="action" value="removeFile">Delete file</button>-->
+<!--    <label for="removeTarget">Remove file or directory</label>-->
+<!--    <input type="text" name="target" id="removeTarget" required/>-->
+<!--    <button type="submit" name="action" value="delete">Remove Dir</button>-->
 <!--</form>-->
-
-<!--<p>Current path: --><?php //echo BASE_PATH ?><!--</p>-->
+<!--<form action="FileHandler.php" method="POST">-->
+<!--    <label for="targetFile">File or directory to rename</label>-->
+<!--    <input type="text" name="targetDir" id="targetFile" required/>-->
+<!--    <label for="fileNameInput">New name</label>-->
+<!--    <input type="text" name="newName" id="fileNameInput" required/>-->
+<!--    <button type="submit" name="action" value="renameFile">Rename Dir</button>-->
+<!--</form>-->
 
 <?php
 
 $fullPath = PathManager::EnsureDirectorySeparator(GALLERY_PATH . DIRECTORY_SEPARATOR . $_SESSION['current_sub_path']);
-// Ensure the path ends with a slash so glob looks INSIDE it
+
 
 
 ?>
@@ -100,24 +88,20 @@ $fullPath = PathManager::EnsureDirectorySeparator(GALLERY_PATH . DIRECTORY_SEPAR
 
 <div class="container">
 <?php
-//// List the files in that specific location
-//$items = scandir($fullPath);
-//$items = FileManager::GetFilesOfDirectory($fullPath);
+
 
 ?>
  <?php
-// 1. Get all directories (ignores . and .. automatically)
+// Všechny složky
 $directories = glob($fullPath."*", GLOB_ONLYDIR);
 
-// 2. Get images with specific extensions
-// GLOB_BRACE allows the {png,jpg,...} syntax
+// Všechny obrázky
+// GLOB_BRACE umožňuje udělat skupinu různých výrazů
 $images = glob($fullPath."*.{png,jpg,jpeg,gif}", GLOB_BRACE);
 
-// Merge them if you want one single list, or loop through them separately
-foreach ($directories as $dir) {
-//    echo "📁 <a href='?open=$dir'>$dir</a><br>";
 
-//    ?><!-- <a href='?open=--><?php //echo basename($dir) ?><!--'>📁 --><?php //echo basename($dir) ?><!--</a><br> --><?php
+//Výpis všech složek
+foreach ($directories as $dir) {
 
 $name = basename($dir);
 ?>
@@ -136,6 +120,7 @@ $name = basename($dir);
 
 }
 
+// Výpis všech obrázků
 foreach ($images as $img) {
     $fileName = basename($img);
     $src = "gallery/" . $_SESSION['current_sub_path'] . "/" . $fileName;
@@ -151,10 +136,10 @@ foreach ($images as $img) {
     <form action="FileHandler.php" method="POST" style="display:inline;">
         <input type="hidden" name="target" value="<?php echo $fileName; ?>">
         <button type="submit" name="action" value="delete"
-                onclick="return confirm('Smazat složku <?php echo $src; ?>?')">🗑️</button>
+                onclick="return confirm('Smazat složku <?php echo $fileName; ?>?')">🗑️</button>
     </form>
 
-    <button onclick="renameItem('<?php echo $src; ?>')">✏️</button>
+    <button onclick="renameItem('<?php echo $fileName; ?>')">✏️</button>
 </div>
 <?php
 }
